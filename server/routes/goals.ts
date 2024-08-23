@@ -6,12 +6,12 @@ import { Schema, z } from 'zod'
 const goalSchema = z.object({
   uuid: z.string().regex(new RegExp("[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$")),
   title: z.string(),
-  completed_by: z.array(z.string()),
-  streak: z.number(),
+  completed_by: z.optional(z.array(z.string())),
+  streak: z.optional(z.number()),
   completed: z.boolean()
 })
 
-const createPostSchema = goalSchema.omit({uuid: true, completed_by: true, streak: true, completed: true})
+const createPostSchema = goalSchema.omit({ uuid: true, completed_by: true, streak: true, completed: true })
 
 type Goal = z.infer<typeof goalSchema>
 
@@ -82,11 +82,13 @@ const fakeGoals: Goal[] = [
 ]
 
 export const goalsRoute = new Hono()
+  .get("/total-goals", (c) => {
+    let total = fakeGoals.length
+    return c.json({ total })
+  })
   .get("/", c => {
     return c.json({
-      "Fitness": [
-        { fakeGoals }
-      ]
+      "Fitness": [ { fakeGoals } ]
     })
   })
   .post("/", zValidator("json", createPostSchema), async (c) => {
@@ -110,7 +112,7 @@ export const goalsRoute = new Hono()
     const uuid = c.req.param("id");
     const index = fakeGoals.findIndex(goal => goal.uuid === uuid)
 
-    if(index === -1)
+    if (index === -1)
       return c.notFound()
 
     const deletedGoal = fakeGoals.splice(index, 1)[0]
