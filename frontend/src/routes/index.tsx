@@ -16,7 +16,7 @@ export const Route = createFileRoute('/')({
 async function getTotalGoals() {
   const result = await api.goals["total-goals"].$get();
   if (!result.ok) throw new Error("server error");
-  const data = result.json();
+  const data = await result.json();
   return data;
 }
 
