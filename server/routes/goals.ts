@@ -2,6 +2,7 @@ import { zValidator } from "@hono/zod-validator";
 import { Hono } from "hono";
 import { v4 as uuidv4 } from 'uuid';
 import { Schema, z } from 'zod'
+import { getUser } from "../kind";
 
 const goalSchema = z.object({
   uuid: z.string().regex(new RegExp("[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$")),
@@ -82,22 +83,22 @@ const fakeGoals: Goal[] = [
 ]
 
 export const goalsRoute = new Hono()
-  .get("/total-goals", (c) => {
+  .get("/total-goals", getUser, (c) => {
     let total = fakeGoals.length
     return c.json({ total })
   })
-  .get("/", c => {
+  .get("/", getUser, c => {
     return c.json({
-      "Fitness": [ { fakeGoals } ]
+      "Fitness": [{ fakeGoals }]
     })
   })
-  .post("/", zValidator("json", createPostSchema), async (c) => {
+  .post("/", getUser, zValidator("json", createPostSchema), async (c) => {
     const goal = await c.req.valid("json")
     fakeGoals.push({ ...goal, uuid: uuidv4(), completed: false })
     return c.json(goal)
   })
   //regex for uuid validation
-  .get("/:id{[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$}", (c) => {
+  .get("/:id{[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$}", getUser, (c) => {
     //const id = Number.parseInt(c.req.param("id"))
     const uuid = c.req.param("id");
     const goal = fakeGoals.find(goal => goal.uuid === uuid)
@@ -108,7 +109,7 @@ export const goalsRoute = new Hono()
     c.status(201)
     return c.json({ goal })
   })
-  .delete("/:id{[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$}", (c) => {
+  .delete("/:id{[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$}", getUser, (c) => {
     const uuid = c.req.param("id");
     const index = fakeGoals.findIndex(goal => goal.uuid === uuid)
 

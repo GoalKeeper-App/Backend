@@ -13,7 +13,7 @@ import {
 } from "@/components/ui/table";
 import { Skeleton } from "@/components/ui/skeleton";
 
-export const Route = createFileRoute("/goals")({
+export const Route = createFileRoute("/_authenticated/goals")({
   component: Goals,
 });
 
