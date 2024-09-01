@@ -3,6 +3,10 @@ import { Hono } from "hono";
 import { v4 as uuidv4 } from 'uuid';
 import { Schema, z } from 'zod'
 import { getUser } from "../kind";
+import { db } from "../db";
+import { goals, goals as goalsTable } from "../db/schema/goals";
+import { count, eq } from "drizzle-orm";
+import { uuid } from 'drizzle-orm/pg-core';
 
 const goalSchema = z.object({
   uuid: z.string().regex(new RegExp("[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$")),
@@ -16,7 +20,7 @@ const createPostSchema = goalSchema.omit({ uuid: true, completed_by: true, strea
 
 type Goal = z.infer<typeof goalSchema>
 
-const fakeGoals: Goal[] = [
+/*onst fakeGoals: Goal[] = [
   {
     uuid: uuidv4(),
     title: "Test",
@@ -80,28 +84,43 @@ const fakeGoals: Goal[] = [
     "streak": 3,
     "completed": true,
   }
-]
+]*/
 
 export const goalsRoute = new Hono()
-  .get("/total-goals", getUser, (c) => {
-    let total = fakeGoals.length
-    return c.json({ total })
-  })
-  .get("/", getUser, c => {
-    return c.json({
-      "Fitness": [{ fakeGoals }]
-    })
+  .get("/", getUser, async c => {
+    const user = c.var.user
+    const goals = await db.select().from(goalsTable)
+
+    return c.json({ goals: goals })
   })
   .post("/", getUser, zValidator("json", createPostSchema), async (c) => {
     const goal = await c.req.valid("json")
-    fakeGoals.push({ ...goal, uuid: uuidv4(), completed: false })
-    return c.json(goal)
+
+    const result = await db
+      .insert(goalsTable).values({ ...goal })
+      .returning()
+      .then(res => res[0])
+
+    c.status(201)
+    return c.json(result)
+  })
+  .get("/total-goals", getUser, async (c) => {
+    let result = await db
+      .select({ total: count(goals.uuid) })
+      .from(goalsTable)
+      .limit(1)
+      .then(res => res[0])
+
+    return c.json({ result })
   })
   //regex for uuid validation
-  .get("/:id{[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$}", getUser, (c) => {
-    //const id = Number.parseInt(c.req.param("id"))
+  .get("/:id{[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$}", getUser, async (c) => {
     const uuid = c.req.param("id");
-    const goal = fakeGoals.find(goal => goal.uuid === uuid)
+    const goal = await db
+      .select().from(goalsTable)
+      .where(eq(goalsTable.uuid, uuid))
+      .limit(1)
+      .then(res => res[0])
 
     if (!goal)
       return c.notFound()
@@ -109,15 +128,23 @@ export const goalsRoute = new Hono()
     c.status(201)
     return c.json({ goal })
   })
-  .delete("/:id{[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$}", getUser, (c) => {
-    const uuid = c.req.param("id");
-    const index = fakeGoals.findIndex(goal => goal.uuid === uuid)
+  .delete("/:id{[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$}", getUser, async (c) => {
+    //const index = fakeGoals.findIndex(goal => goal.uuid === uuid)
+    //if (index === -1)
+    //  return c.notFound()
+    //const deletedGoal = fakeGoals.splice(index, 1)[0]
 
-    if (index === -1)
+    const uuid = c.req.param("id");
+    const deletedGoal = await db
+      .delete(goalsTable)
+      .where(eq(goalsTable.uuid, uuid))
+      .returning()
+      .then(res => res[0])
+
+    if (!deletedGoal)
       return c.notFound()
 
-    const deletedGoal = fakeGoals.splice(index, 1)[0]
-
+    c.status(201)
     return c.json({ goal: deletedGoal })
   })
 // .put

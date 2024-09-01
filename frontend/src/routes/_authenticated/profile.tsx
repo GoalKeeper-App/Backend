@@ -16,7 +16,9 @@ function Profile() {
   return (
     <div>
       <p>Hello {data.user.given_name}!</p>
-      <a href="/api/logout">Logout</a>
+      <Button asChild className="mt-5">
+        <a href="/api/logout">Logout</a>
+      </Button>
     </div>
   );
 }

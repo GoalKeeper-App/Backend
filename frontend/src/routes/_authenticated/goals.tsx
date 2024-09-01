@@ -6,7 +6,7 @@ import {
   TableBody,
   TableCaption,
   TableCell,
-  TableFooter,
+  //TableFooter,
   TableHead,
   TableHeader,
   TableRow,
@@ -18,9 +18,8 @@ export const Route = createFileRoute("/_authenticated/goals")({
 });
 
 async function getAllGoals() {
-  //await new Promise((r) => setTimeout(r, 3000));
   const result = await api.goals.$get();
-  if (!result.ok) throw new Error("server error");
+  if (!result.ok) throw new Error("Server error");
   const data = await result.json();
   return data;
 }
@@ -30,14 +29,15 @@ function Goals() {
     queryKey: ["get-all-goals"],
     queryFn: getAllGoals,
   });
-  if (error) return "An error has occurred: " + error.message;
+
+  if (error) return <div>An error has occurred: {error.message}</div>;
 
   return (
     <div className="p-2 max-w-3xl m-auto">
       <Table>
         <TableCaption>A list of all your goals.</TableCaption>
         <TableHeader>
-          <TableRow>
+          <TableRow key="header">
             <TableHead className="w-[100px]">Title</TableHead>
             <TableHead>Completed by</TableHead>
             <TableHead>Streak</TableHead>
@@ -48,29 +48,36 @@ function Goals() {
           {isPending
             ? Array(3)
                 .fill(0)
-                .map((_, i) => (
-                  <TableRow>
+                .map((_, j) => (
+                  <TableRow key={`skeleton-${j}`}>
                     {Array(4)
                       .fill(0)
                       .map((_, i) => (
-                        <TableCell>
+                        <TableCell key={`skeleton-cell-${j}-${i}`}>
                           <Skeleton className="h-4" />
                         </TableCell>
                       ))}
                   </TableRow>
                 ))
-            : data?.Fitness.map((fit) =>
-                fit.fakeGoals.map((goal) => (
-                  <TableRow key={goal.title}>
-                    <TableCell className="font-medium">{goal.title}</TableCell>
-                    <TableCell>{goal.completed_by?.join(", ")}</TableCell>
-                    <TableCell>{goal.streak}</TableCell>
-                    <TableCell className="text-2xl">
-                      {goal.completed ? "✅" : "❌"}
-                    </TableCell>
-                  </TableRow>
-                ))
-              )}
+            : data?.goals.map((goal) => (
+                <TableRow key={goal.uuid}>
+                  <TableCell key={`${goal.uuid}-title`} className="font-medium">
+                    {goal.title}
+                  </TableCell>
+                  <TableCell key={`${goal.uuid}-completed_by`}>
+                    {goal.completed_by?.join(", ")}
+                  </TableCell>
+                  <TableCell key={`${goal.uuid}-streak`}>
+                    {goal.streak}
+                  </TableCell>
+                  <TableCell
+                    key={`${goal.uuid}-completed`}
+                    className="text-2xl"
+                  >
+                    {goal.completed ? "✅" : "❌"}
+                  </TableCell>
+                </TableRow>
+              ))}
         </TableBody>
       </Table>
     </div>

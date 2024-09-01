@@ -33,7 +33,7 @@ function Index() {
           <CardTitle>Total Goals</CardTitle>
           <CardDescription>The total amount of goals</CardDescription>
         </CardHeader>
-        <CardContent>{isPending ? "..." : data.total}</CardContent>
+        <CardContent>{isPending ? "..." : data.result.total}</CardContent>
       </Card>
     );
 }

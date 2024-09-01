@@ -4,10 +4,12 @@ import { Button } from "@/components/ui/button";
 
 const Login = () => {
   return (
-    <div>
-      You have to login
-      <a href="/api/login"> Login</a>
-    </div>
+    <>
+      <div>You have to login</div>
+      <Button asChild className="mt-3">
+        <a href="/api/login">Login</a>
+      </Button>
+    </>
   );
 };
 
