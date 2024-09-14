@@ -1,11 +1,11 @@
 {
-  "id": "02e4cc95-2782-414e-9c18-4bc8099c985a",
-  "prevId": "479b9ec8-e410-4f53-bb9c-7bf7ca17b966",
+  "id": "55d70c2c-7a82-40a6-beba-c125686256d6",
+  "prevId": "22785452-81e8-46fb-bcd0-6908fc02ddc9",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
-    "public.goals": {
-      "name": "goals",
+    "public.goal_lists": {
+      "name": "goal_lists",
       "schema": "",
       "columns": {
         "uuid": {
@@ -29,25 +29,111 @@
           "default": "now()"
         }
       },
-      "indexes": {
-        "uuser_idx": {
-          "name": "uuser_idx",
-          "columns": [
-            {
-              "expression": "uuid",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": true,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        }
-      },
+      "indexes": {},
       "foreignKeys": {},
       "compositePrimaryKeys": {},
+      "uniqueConstraints": {}
+    },
+    "public.goals": {
+      "name": "goals",
+      "schema": "",
+      "columns": {
+        "uuid": {
+          "name": "uuid",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "title": {
+          "name": "title",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "now()"
+        },
+        "list_uuid": {
+          "name": "list_uuid",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "goals_list_uuid_goal_lists_uuid_fk": {
+          "name": "goals_list_uuid_goal_lists_uuid_fk",
+          "tableFrom": "goals",
+          "tableTo": "goal_lists",
+          "columnsFrom": [
+            "list_uuid"
+          ],
+          "columnsTo": [
+            "uuid"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {}
+    },
+    "public.user_achievements": {
+      "name": "user_achievements",
+      "schema": "",
+      "columns": {
+        "user_id": {
+          "name": "user_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "goal_uuid": {
+          "name": "goal_uuid",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "achieved_at": {
+          "name": "achieved_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "user_achievements_goal_uuid_goals_uuid_fk": {
+          "name": "user_achievements_goal_uuid_goals_uuid_fk",
+          "tableFrom": "user_achievements",
+          "tableTo": "goals",
+          "columnsFrom": [
+            "goal_uuid"
+          ],
+          "columnsTo": [
+            "uuid"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "pk_user_achviement": {
+          "name": "pk_user_achviement",
+          "columns": [
+            "goal_uuid",
+            "user_id",
+            "achieved_at"
+          ]
+        }
+      },
       "uniqueConstraints": {}
     }
   },

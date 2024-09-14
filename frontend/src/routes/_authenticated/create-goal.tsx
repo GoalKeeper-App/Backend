@@ -4,6 +4,8 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { useForm } from "@tanstack/react-form";
 import { api } from "@/lib/api";
+import { zodValidator } from "@tanstack/zod-form-adapter";
+//import { createGoalSchema } from "@server/sharedTypes";
 
 export const Route = createFileRoute("/_authenticated/create-goal")({
   component: CreateGoal,
@@ -13,13 +15,14 @@ function CreateGoal() {
   const navigate = useNavigate();
 
   const form = useForm({
+    validatorAdapter: zodValidator(),
     defaultValues: {
       title: "",
     },
     onSubmit: async ({ value }) => {
-      const res = await api.goals.$post({ json: value });
-      if (!res.ok) throw new Error("Server Error");
-      navigate({ to: "/goals" });
+      //const res = await api.goals.$post({ json: value });
+      //if (!res.ok) throw new Error("Server Error");
+      //navigate({ to: "/goals" });
     },
   });
 
@@ -32,26 +35,15 @@ function CreateGoal() {
           e.stopPropagation();
           form.handleSubmit();
         }}
-        className="max-w-xl m-auto"
+        className="flex flex-col gap-y-4 max-w-xl m-auto"
       >
         <div>
-          {/* A type-safe field component*/}
           <form.Field
             name="title"
-            validators={{
-              onChange: ({ value }) =>
-                !value ? "A title is required" : undefined,
-              onChangeAsyncDebounceMs: 500,
-              onChangeAsync: async ({ value }) => {
-                return (
-                  value.includes("error") && 'No "error" allowed in first name'
-                );
-              },
-            }}
+            validators={{ onChange: () => ("") }}//createGoalSchema.shape.title }}
             children={(field) => {
-              // Avoid hasty abstractions. Render props are great!
               return (
-                <>
+                <div>
                   <Label htmlFor={field.name}>Title</Label>
                   <Input
                     id={field.name}
@@ -65,7 +57,7 @@ function CreateGoal() {
                   field.state.meta.errors.length ? (
                     <em>{field.state.meta.errors.join(", ")}</em>
                   ) : null}
-                </>
+                </div>
               );
             }}
           />
