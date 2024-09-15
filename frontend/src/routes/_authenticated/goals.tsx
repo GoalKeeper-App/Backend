@@ -42,7 +42,7 @@ const GoalItem = ({
   };
 
   return (
-    <div className="mb-2 pl-5 pr-1 pt-3 relative">
+    <div className="mt-4 pl-0 pr-5 pt-3 relative">
       <Card
         className={`relative border ${
           /*allFriendsCompleted*/ false
@@ -52,11 +52,11 @@ const GoalItem = ({
               : "border-red-200 dark:border-red-700"
         }`}
       >
-        <CardContent className="p-2 pl-5 pr-5">
+        <CardContent className="p-2 pt- pr-6">
           <Button
             variant={goal.completed ? "secondary" : "default"}
             size="icon"
-            className={`absolute -left-5 top-1/2 -translate-y-1/2 rounded-full w-10 h-10 ${
+            className={`absolute -right-5 top-1/2 -translate-y-1/2 rounded-full w-10 h-10 ${
               /*allFriendsCompleted*/ false
                 ? "bg-amber-500 hover:bg-amber-600 dark:bg-amber-600 dark:hover:bg-amber-700"
                 : goal.completed
@@ -73,7 +73,7 @@ const GoalItem = ({
           </Button>
           <Badge
             variant="secondary"
-            className="absolute -top-3 right-2 bg-orange-500 dark:bg-orange-600 text-white px-2 py-1"
+            className="absolute -top-4 bg-orange-500 dark:bg-orange-600 text-white px-2 py-1"
           >
             <Flame className="h-3 w-3 mr-1" />
             <span className="font-bold">{goal.streak}</span>
@@ -264,11 +264,11 @@ const GoalList = ({
           numberOfPieces={confettiIntensity}
         />
       )}
-      <CardContent className="p-6">
-        <h1 className="text-2xl font-bold mb-4 text-gray-900 dark:text-gray-100">
+      <CardContent className="p-5 pt-3">
+        <h1 className="text-2xl font-bold mb-2 text-gray-900 dark:text-gray-100">
           Healthier Lifestyle
         </h1>
-        <div className="mb-4">
+        <div className="mb-2">
           <div className="flex justify-between items-center mb-2">
             <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
               {completedGoalsCount}/{goals.length} goals completed today
@@ -279,7 +279,7 @@ const GoalList = ({
           </div>
           <Progress value={completionPercentage} className="w-full h-2" />
         </div>
-        <ScrollArea className="h-[calc(100vh-27vh)] pr-3 -mr-4">
+        <ScrollArea className="h-[calc(75vh)] pr-3 -mr-4">
           {sortedGoals.map((goal) => (
             <GoalItem
               key={goal.goal_uuid}

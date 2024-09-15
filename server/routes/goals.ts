@@ -159,11 +159,11 @@ export const goalsRoute = new Hono()
           EXISTS (
             SELECT 1 FROM ${userGoalListsTable}
             WHERE ${userGoalListsTable.goalList_uuid} = ${goalListTable.uuid}
+            AND ${userGoalListsTable.userId} = ${user.id}
           )
         `.as('subscribed'),
       })
       .from(goalListTable)
-      .leftJoin(userGoalListsTable, eq(userGoalListsTable.goalList_uuid, goalListTable.uuid))
 
     const goalListsWithGoals = await Promise.all(goalLists.map(async (goalList) => {
       const goalsForList = await db

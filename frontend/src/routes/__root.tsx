@@ -13,7 +13,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { userQueryOptions } from "@/lib/api";
 
 //import { userQueryOptions } from "@/lib/api";
-import { useQuery, type QueryClient } from "@tanstack/react-query";
+import { type QueryClient } from "@tanstack/react-query";
 import {
   createRootRouteWithContext,
   Link,
@@ -42,10 +42,9 @@ function NavBar() {
   //const { isPending, data, error } = {isPending: false, data: null, error: false}//useQuery(userQueryOptions);
   const { user } = Route.useRouteContext();
   const error = user === null;
-  console.log(user);
-  console.log(error);
+
   return (
-    <div className="p-2 flex justify-between max-w-2xl m-auto">
+    <div className="p-1 flex justify-between max-w-2xl m-auto">
       <div className="flex align-text-bottom">
         <Link to="/" className="[&.active]:font-bold m-1 p-2">
           Home
