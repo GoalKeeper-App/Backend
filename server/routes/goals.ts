@@ -2,14 +2,44 @@ import { zValidator } from "@hono/zod-validator";
 import { Hono } from "hono";
 import { getUser } from "../kind";
 import { db } from "../db";
-import { goals as goalsTable, userGoalLists as userGoalListsTable, goalLists as goalListTable, userAchievements as userAchievementsTable, insertUserAchivementsSchema, insertUserGoalListsSchema, goals } from '../db/schema/goals';
-import { and, count, eq, exists, sql } from "drizzle-orm";
+import { goals as goalsTable, userGoalLists as userGoalListsTable, goalLists as goalListTable, userAchievements as userAchievementsTable, insertUserAchivementsSchema, insertUserGoalListsSchema } from '../db/schema/goals';
+import { and, count, eq, exists, ne, sql } from "drizzle-orm";
 import { type GoalResponse, type GoalList } from '../sharedTypes';
+import { users as usersTable } from "../db/schema/users";
 //import { createGoalSchema } from "../sharedTypes";
 
 export const goalsRoute = new Hono()
   .get("/", getUser, async c => {
     const user = c.var.user
+
+    let userDB = await db
+      .select({
+        name: usersTable.name,
+      })
+      .from(usersTable)
+      .where(eq(usersTable.id, user.id))
+      .limit(1)
+      .then(res => res[0]);
+
+    if (userDB === undefined) {
+      console.log(userDB)
+      await db
+        .insert(usersTable)
+        .values({
+          id: user.id,
+          name: user.given_name
+        });
+
+      userDB = await db
+        .select({
+          name: usersTable.name,
+        })
+        .from(usersTable)
+        .where(eq(usersTable.id, user.id))
+        .limit(1)
+        .then(res => res[0]);
+    }
+
     const userGoalLists = await db
       .select()
       .from(goalListTable)
@@ -79,20 +109,38 @@ export const goalsRoute = new Hono()
 
       return {
         title: goalList.goal_lists.title,
-        total_user: totalGoalListUser,
-        goals: goals.map((goal) => ({
-          goal_uuid: goal.uuid,
+        totalUser: totalGoalListUser,
+        goals: await Promise.all(await goals.map(async (goal) => ({
+          goalUuid: goal.uuid,
           title: goal.title,
           completed: goal.completed,
-          createdAt: goal.createdAt ? goal.createdAt.toISOString() : "",  // Konvertiert `Date` zu `string`
+          createdAt: goal.createdAt ? goal.createdAt.toISOString() : "",
           streak: Number(goal.streak),
-          contributers: {}  // Placeholder, später spezifizieren
-        }))
+          contributers: await db
+            .select({
+              name: usersTable.name
+            })
+            .from(userAchievementsTable)
+            .where(and(
+              sql<boolean>`DATE(${userAchievementsTable.achievedAt}) = current_date`,
+              eq(userAchievementsTable.completed, true)))
+            .innerJoin(
+              usersTable,
+              eq(usersTable.id, userAchievementsTable.userId))
+            .innerJoin(
+              goalsTable,
+              and(
+                and(
+                  eq(goalsTable.uuid, goal.uuid),
+                  eq(userAchievementsTable.goalUuid, goal.uuid)),
+                eq(goalsTable.listUuid, goalList.goal_lists.uuid)))
+        })))
       };
     }));
 
     return c.json<GoalResponse>({
-      lists: lists  // `lists` enthält jetzt synchronisierte Daten
+      userName: userDB.name,
+      lists: lists
     });
   })
   .get("/total-goals", getUser, async (c) => {
@@ -167,9 +215,9 @@ export const goalsRoute = new Hono()
 
     const goalListsWithGoals = await Promise.all(goalLists.map(async (goalList) => {
       const goalsForList = await db
-        .select({ title: goals.title, uuid: goals.uuid })
-        .from(goals)
-        .where(eq(goals.listUuid, goalList.uuid));
+        .select({ title: goalsTable.title, uuid: goalsTable.uuid })
+        .from(goalsTable)
+        .where(eq(goalsTable.listUuid, goalList.uuid));
 
       return {
         ...goalList,

@@ -12,6 +12,12 @@ import { type GoalEntity, type GoalList } from "@server/sharedTypes";
 import { useQuery } from "@tanstack/react-query";
 import { api } from "@/lib/api";
 import { SubscribeGoalLists } from "./index";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 export const Route = createFileRoute("/_authenticated/goals")({
   component: GoalTracker,
@@ -19,33 +25,31 @@ export const Route = createFileRoute("/_authenticated/goals")({
 
 const GoalItem = ({
   goal,
+  totalUser,
   onToggleCompletion,
 }: {
   goal: GoalEntity;
+  totalUser: number;
   onToggleCompletion: (
     uuid: string,
     completed: boolean,
     allCompleted: boolean
   ) => void;
 }) => {
-  //const completionPercentage = /*response.friendscompleted*/ 0 / response.total_user) * 100;
-  //const displayedAvatars = response.friendAvatars.slice(0, 3);
-  //const remainingAvatars = goal.friendAvatars.length - 3;
-  //const allFriendsCompleted = /*goal.friendsCompleted*/ 0 === response.total_user;
+  const completionPercentage = (goal.contributers.length / totalUser) * 100;
+  const displayedContributers = goal.contributers.slice(0, 3);
+  const remainingContributers = goal.contributers.length - 3;
+  const allFriendsCompleted = goal.contributers.length === totalUser;
 
   const handleCompletion = () => {
-    onToggleCompletion(
-      goal.goal_uuid,
-      !goal.completed,
-      false /*allFriendsCompleted*/
-    );
+    onToggleCompletion(goal.goalUuid, !goal.completed, allFriendsCompleted);
   };
 
   return (
-    <div className="mt-4 pl-0 pr-5 pt-3 relative">
+    <div className="mt-3 pl-0 pr-5 pt-3 relative">
       <Card
         className={`relative border ${
-          /*allFriendsCompleted*/ false
+          allFriendsCompleted
             ? "border-amber-200 dark:border-amber-700"
             : goal.completed
               ? "border-green-200 dark:border-green-700"
@@ -57,7 +61,7 @@ const GoalItem = ({
             variant={goal.completed ? "secondary" : "default"}
             size="icon"
             className={`absolute -right-5 top-1/2 -translate-y-1/2 rounded-full w-10 h-10 ${
-              /*allFriendsCompleted*/ false
+              allFriendsCompleted
                 ? "bg-amber-500 hover:bg-amber-600 dark:bg-amber-600 dark:hover:bg-amber-700"
                 : goal.completed
                   ? "bg-green-500 hover:bg-green-600 dark:bg-green-600 dark:hover:bg-green-700"
@@ -79,45 +83,51 @@ const GoalItem = ({
             <span className="font-bold">{goal.streak}</span>
           </Badge>
           <div className="pl-2">
-            <h3 className="text-base font-semibold text-gray-900 dark:text-gray-100 mb-2">
+            <h3 className="text-base font-semibold text-gray-900 dark:text-gray-100 mb-1">
               {goal.title}
             </h3>
-            <div className="mb-2">
-              {/*
+            <div className="">
               <div className="flex items-center justify-between mb-1">
                 <div className="flex items-center space-x-1">
-                  <Users className="h-3 w-3 text-gray-500 dark:text-gray-400" />
-                  <div className="flex">
-                    {
-                      /*displayedAvatars.map((avatar, index) => (* /
-                      <Avatar
-                        key={/*index* / 0}
-                        className="border text-[9px] w-5 h-5 border-white dark:border-gray-800"
-                      >
-                        <AvatarImage src={"" /*avatar* /} alt={"AD"} />
-                        <AvatarFallback>
-                          {
-                            //user?.given_name[0] + user?.family_name[0]}
-                            "AD"
-                          }
-                        </AvatarFallback>
-                      </Avatar>
-                      /*))* /
+                  <Users
+                    className={`h-3 w-3 ${
+                      displayedContributers.length === 0
+                        ? "text-red-500 dark:text-red-500"
+                        : "text-grey-500 dark:text-grey-500}"
                     }
-                    {
-                      /*remainingAvatars > 0 && (* /
+                  `}
+                  />
+                  <div className="flex">
+                    {displayedContributers.map((avatar, index) => (
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Avatar
+                              key={index}
+                              className="border text-[11px] w-5 h-5 border-white dark:border-gray-800"
+                            >
+                              <AvatarImage alt={avatar.name[0]} />
+                              <AvatarFallback>{avatar.name[0]}</AvatarFallback>
+                            </Avatar>
+                          </TooltipTrigger>
+                          <TooltipContent className="cursor-default">
+                            <p className="cursor-default">{avatar.name}</p>
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
+                    ))}
+                    {remainingContributers > 0 && (
                       <Avatar className="border text-[9px] w-5 h-5 border-white dark:border-gray-800">
                         <AvatarFallback className="text-[8px] font-medium text-gray-600 dark:text-gray-300">
-                          +0{/*remainingAvatars* /}
+                          +{remainingContributers}
                         </AvatarFallback>
                       </Avatar>
-                      / *)* /
-                    }
+                    )}
                   </div>
                 </div>
                 <span
                   className={`text-xs font-medium ${
-                    /*allFriendsCompleted* / false
+                    allFriendsCompleted
                       ? "text-amber-700 dark:text-amber-300"
                       : goal.completed
                         ? "text-green-700 dark:text-green-300"
@@ -126,33 +136,33 @@ const GoalItem = ({
                 ></span>
                 <span
                   className={`flex items-center space-x-1 text-xs font-medium ${
-                    /*allFriendsCompleted* / false
+                    allFriendsCompleted
                       ? "text-amber-700 dark:text-amber-300"
                       : goal.completed
                         ? "text-green-700 dark:text-green-300"
                         : "text-red-700 dark:text-red-300"
                   }`}
                 >
-                  {/*goal.friendsCompleted}/{goal.totalFriends* /}
+                  {goal.contributers.length}/{totalUser}
                   <Users
                     className={`h-3 w-3 m-1 ${
-                      /*allFriendsCompleted* / false
+                      allFriendsCompleted
                         ? "text-amber-700 dark:text-amber-300"
                         : goal.completed
                           ? "text-green-700 dark:text-green-300"
                           : "text-red-700 dark:text-red-300"
                     }`}
                   />
-                  - {/*completionPercentage.toFixed(0)* / 0}%
+                  - {completionPercentage.toFixed(0)}%
                 </span>
-              </div>*/}
+              </div>
               <Progress
-                value={/*completionPercentage */ 0}
+                value={completionPercentage}
                 className={`w-full h-1 ${
-                  /*allFriendsCompleted*/ false
+                  allFriendsCompleted
                     ? "bg-amber-200 dark:bg-amber-700"
                     : goal.completed
-                      ? "bg-green-200 dark:bg-green-700"
+                      ? "bg-green-100 dark:bg-green-900"
                       : "bg-red-200 dark:red-950 dark:bg-red-200"
                 }`}
               />
@@ -189,7 +199,12 @@ export default function GoalTracker() {
         </>
       ) : (
         data?.lists.map((list) => (
-          <GoalList key={list.title} goalsInput={list} refetch={refetch} />
+          <GoalList
+            key={list.title}
+            userName={data.userName}
+            goalsInput={list}
+            refetch={refetch}
+          />
         ))
       )}
     </>
@@ -197,9 +212,11 @@ export default function GoalTracker() {
 }
 
 const GoalList = ({
+  userName,
   goalsInput,
   refetch,
 }: {
+  userName: string;
   goalsInput: GoalList;
   refetch: () => void;
 }) => {
@@ -216,17 +233,20 @@ const GoalList = ({
 
   const handleToggleCompletion = async (
     goalUuid: string,
-    completed: boolean,
-    allCompleted: boolean
+    completed: boolean
   ) => {
-    // Update the UI optimistically
     setGoals(
       goals.map((goal) =>
-        goal.goal_uuid === goalUuid
+        goal.goalUuid === goalUuid
           ? {
               ...goal,
               completed: completed,
               streak: completed ? goal.streak + 1 : goal.streak - 1,
+              contributers: completed
+                ? [...goal.contributers, { name: userName }]
+                : goal.contributers.filter(
+                    (contributer) => contributer.name != userName
+                  ),
             }
           : goal
       )
@@ -241,7 +261,7 @@ const GoalList = ({
 
     if (completed) {
       setShowConfetti(true);
-      setConfettiIntensity(allCompleted ? 500 : 200);
+      setConfettiIntensity(200);
     }
 
     await refetch();
@@ -255,7 +275,7 @@ const GoalList = ({
   const completionPercentage = (completedGoalsCount / goals.length) * 100;
 
   return (
-    <Card className="max-w-md mx-auto border shadow-md dark:shadow-neutral-900 dark:bg-inherit">
+    <Card className="max-w-md h-100 mx-auto border shadow-md dark:shadow-neutral-900 dark:bg-inherit">
       {showConfetti && (
         <Confetti
           width={window.innerWidth}
@@ -265,10 +285,10 @@ const GoalList = ({
         />
       )}
       <CardContent className="p-5 pt-3">
-        <h1 className="text-2xl font-bold mb-2 text-gray-900 dark:text-gray-100">
+        <h1 className="text-2xl font-bold mb-1 text-gray-900 dark:text-gray-100">
           Healthier Lifestyle
         </h1>
-        <div className="mb-2">
+        <div className="mb-1">
           <div className="flex justify-between items-center mb-2">
             <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
               {completedGoalsCount}/{goals.length} goals completed today
@@ -279,12 +299,13 @@ const GoalList = ({
           </div>
           <Progress value={completionPercentage} className="w-full h-2" />
         </div>
-        <ScrollArea className="h-[calc(75vh)] pr-3 -mr-4">
+        <ScrollArea className="h-[calc(100vh-280px)] pr-3 -mr-4">
           {sortedGoals.map((goal) => (
             <GoalItem
-              key={goal.goal_uuid}
+              key={goal.goalUuid}
               goal={goal}
               onToggleCompletion={handleToggleCompletion}
+              totalUser={goalsInput.totalUser}
             />
           ))}
         </ScrollArea>

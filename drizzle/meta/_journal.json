@@ -29,6 +29,27 @@
       "when": 1726160076980,
       "tag": "0003_gifted_husk",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1726494553998,
+      "tag": "0004_known_callisto",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1726494619994,
+      "tag": "0005_careless_mesmero",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1726494680579,
+      "tag": "0006_huge_pandemic",
+      "breakpoints": true
     }
   ]
 }

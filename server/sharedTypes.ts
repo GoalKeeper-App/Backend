@@ -1,19 +1,24 @@
 export interface GoalEntity {
-  goal_uuid: string;
+  goalUuid: string;
   title: string;
   createdAt: string;  // Erwarte `string` statt `Date | null`
   streak: number;
   completed: boolean;
-  contributers: Record<string, any>;  // oder genauer spezifizieren, wenn du die Struktur der Contributers kennst
+  contributers: Contributers[];  // oder genauer spezifizieren, wenn du die Struktur der Contributers kennst
+}
+
+export interface Contributers {
+  name: string;
 }
 
 export interface GoalResponse {
+  userName: string,
   lists: GoalList[]
 }
 
 export interface GoalList {
   title: string;
-  total_user: number;
+  totalUser: number;
   goals: GoalEntity[];
 }
 //import { insertGoalSchema } from "./db/schema/goals"

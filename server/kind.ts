@@ -9,7 +9,7 @@ export const kindeClient = createKindeServerClient(GrantType.AUTHORIZATION_CODE,
     clientId: process.env.KINDE_CLIENT_ID!,
     clientSecret: process.env.KINDE_CLIENT_SECRET!,
     redirectURL: process.env.KINDE_REDIRECT_URI!,
-    logoutRedirectURL: process.env.KINDE_LOGOUT_REDIRECT_URI!
+    logoutRedirectURL: process.env.KINDE_LOGOUT_REDIRECT_URI!,
 });
 
 export const sessionManager = (c: Context): SessionManager => ({

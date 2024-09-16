@@ -68,7 +68,7 @@ export const SubscribeGoalLists = ({ refetch }: { refetch: () => void }) => {
           ? goalLists!.map((list) => (
               <Card
                 key={list.uuid}
-                className="flex flex-col min-w-[20vw]  border border-b-zinc-800 hover:border-slate-200"
+                className="flex flex-col min-w-[30vw]  border border-b-zinc-800 hover:border-slate-200"
               >
                 <CardHeader className="p-3 pb-0">
                   <CardTitle className="text-base">{list.title}</CardTitle>
