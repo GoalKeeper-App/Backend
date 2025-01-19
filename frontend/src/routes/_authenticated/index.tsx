@@ -16,8 +16,8 @@ export const Route = createFileRoute("/_authenticated/")({
   component: Index,
 });
 
-async function getTotalGoals() {
-  const result = await api.goals["total-goals"].$get();
+async function getArchievedGoals() {
+  const result = await api.goals["achieved-goals"].$get();
   if (!result.ok) throw new Error("server error");
   const data = await result.json();
   return data;
@@ -45,7 +45,7 @@ export const SubscribeGoalLists = ({ refetch }: { refetch: () => void }) => {
       goalLists!.map(async (list) => {
         if (list.uuid === listUuid && !list.subscribed) {
           await api.goals["subscribe-goal-list"].$post({
-            json: { goalList_uuid: list.uuid },
+            json: { goalListUuid: list.uuid },
           });
           return { ...list, subscribed: true };
         }
@@ -59,28 +59,40 @@ export const SubscribeGoalLists = ({ refetch }: { refetch: () => void }) => {
   };
 
   return (
-    <div className="container mx-auto pl-0 p-3">
+    <div className="mx-auto pl-0 p-3">
       <h1 className="text-xl font-bold mb-5">
         Turn your goal list into lasting habits
       </h1>
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+      {goalLists?.length === 0 ? (
+        <p className="text-l font-bold mb-5">
+          Keine Goal-List vorhanden. Erstelle eine neue Goal-List!
+        </p>
+      ) : (
+        ""
+      )}
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-3">
         {!goalListsQuery.isPending
           ? goalLists!.map((list) => (
               <Card
                 key={list.uuid}
-                className="flex flex-col min-w-[30vw]  border border-b-zinc-800 hover:border-slate-200"
+                className="flex flex-col border border-b-zinc-800 hover:border-slate-200"
               >
                 <CardHeader className="p-3 pb-0">
                   <CardTitle className="text-base">{list.title}</CardTitle>
                 </CardHeader>
                 <CardContent className="p-3 pt-2 flex-grow">
                   <ul className="text-sm space-y-1">
-                    {list.goals!.map((goal) => (
-                      <li key={goal.uuid} className="flex items-start">
-                        <span className="mr-2">•</span>
-                        <span>{goal.title}</span>
-                      </li>
-                    ))}
+                    {list
+                      .goals!.sort(
+                        (goal1, goal2) =>
+                          (goal1?.index ?? 0) - (goal2?.index ?? 0)
+                      )
+                      .map((goal) => (
+                        <li key={goal.uuid} className="flex items-start">
+                          <span className="mr-2">•</span>
+                          <span>{goal.title}</span>
+                        </li>
+                      ))}
                   </ul>
                 </CardContent>
                 <CardFooter className="p-2">
@@ -108,25 +120,25 @@ export const SubscribeGoalLists = ({ refetch }: { refetch: () => void }) => {
 };
 
 export default function Index() {
-  const totalGoalsQuery = useQuery({
-    queryKey: ["get-total-goals"],
-    queryFn: getTotalGoals,
+  const archievedGoalsQuery = useQuery({
+    queryKey: ["get-achieved-goals"],
+    queryFn: getArchievedGoals,
   });
 
-  if (totalGoalsQuery.error)
-    return "An error has occurred: " + totalGoalsQuery.error.message;
+  if (archievedGoalsQuery.error)
+    return "An error has occurred: " + archievedGoalsQuery.error.message;
 
   return (
     <>
-      <Card className="w-96 m-auto">
+      <Card className="w-auto m-auto">
         <CardHeader>
-          <CardTitle>Total Goals</CardTitle>
-          <CardDescription>The total amount of goals</CardDescription>
+          <CardTitle>Erreichte Ziele</CardTitle>
+          <CardDescription>So oft hast deine Ziele schon erreicht. Weiter so!</CardDescription>
         </CardHeader>
         <CardContent>
-          {totalGoalsQuery.isPending
+          {archievedGoalsQuery.isPending
             ? "..."
-            : totalGoalsQuery.data.result!.total}
+            : archievedGoalsQuery.data.result!.total}
         </CardContent>
       </Card>
       <SubscribeGoalLists refetch={() => {}} />

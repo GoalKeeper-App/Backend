@@ -14,11 +14,13 @@ function Profile() {
   if (error) return "not logged in";
 
   return (
-    <div>
-      <p>Hello {data.user.given_name}!</p>
-      <Button asChild className="mt-5">
-        <a href="/api/logout">Logout</a>
-      </Button>
+    <div className="flex justify-center">
+      <div className="w-72 text-center">
+        <p>Hello {data.user.given_name}!</p>
+        <Button asChild className="mt-5">
+          <a href="/api/logout">Logout</a>
+        </Button>
+      </div>
     </div>
   );
 }

@@ -4,21 +4,23 @@
 import { uuid, pgTable, uniqueIndex, text, timestamp, integer, primaryKey, boolean } from 'drizzle-orm/pg-core';
 import { createInsertSchema, createSelectSchema } from 'drizzle-zod';
 import { z } from 'zod';
+import { users } from './users';
 
 export const goalLists = pgTable('goal_lists', {
     uuid: uuid('uuid').defaultRandom().primaryKey(),
     title: text('title').notNull(),
     createdAt: timestamp("created_at").defaultNow(),
+    createdFrom: text("created_from").references(() => users.id)//.default("") - to add it for existing
 });
 
 export const userGoalLists = pgTable('user_goal_lists', {
     userId: text("user_id"),
-    goalList_uuid: uuid("goal_list_uuid").references(() => goalLists.uuid),
+    goalListUuid: uuid("goal_list_uuid").references(() => goalLists.uuid),
     subscribedAt: timestamp("subscribed_at").defaultNow(),
 }, (userGoalLists) => {
     return {
         //pk: primaryKey({ columns: [userAchievements.goalUuid, userAchievements.userUuid, userAchievements.achievedAt] }),
-        pkUserAchviement: primaryKey({ name: 'pk_user_goal_lists', columns: [userGoalLists.userId, userGoalLists.goalList_uuid] }),
+        pkUserAchviement: primaryKey({ name: 'pk_user_goal_lists', columns: [userGoalLists.userId, userGoalLists.goalListUuid] }),
     };
 });
 
@@ -26,7 +28,8 @@ export const goals = pgTable('goals', {
     uuid: uuid('uuid').defaultRandom().primaryKey(),
     title: text('title').notNull(),
     createdAt: timestamp("created_at").defaultNow(),
-    listUuid: uuid("list_uuid").notNull().references(() => goalLists.uuid)
+    listUuid: uuid("list_uuid").references(() => goalLists.uuid),
+    index: integer("index")
 });
 
 export const userAchievements = pgTable('user_achievements', {

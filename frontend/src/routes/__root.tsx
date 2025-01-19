@@ -47,19 +47,10 @@ function NavBar() {
     <div className="p-1 flex justify-between max-w-2xl m-auto">
       <div className="flex align-text-bottom">
         <Link to="/" className="[&.active]:font-bold m-1 p-2">
-          Home
-        </Link>{" "}
-        <Link to="/about" className="[&.active]:font-bold m-1 p-2">
-          About
+          Übersicht
         </Link>
         <Link to="/goals" className="[&.active]:font-bold m-1 p-2">
-          Goals
-        </Link>
-        {/*<Link to="/create-goal" className="[&.active]:font-bold m-1 p-2">
-          Create Goal
-        </Link>*/}
-        <Link to="/profile" className="[&.active]:font-bold m-1 p-2">
-          Profile
+          Goal-Listen
         </Link>
       </div>
       <div className="m-1">
@@ -115,13 +106,12 @@ function NavBar() {
 
 function Root() {
   return (
-    <>
+    <div className="max-h-full">
       <NavBar />
       <hr />
-      <div className="p-2 gap-2 max-w-2xl m-auto">
+      <div className="p-2 gap-2 w-11/12 m-auto">
         <Outlet />
       </div>
-      {/*<TanStackRouterDevtools />*/}
-    </>
+    </div>
   );
 }
