@@ -1,1 +1,0 @@
-ALTER TABLE "goals" ALTER COLUMN "list_uuid" DROP NOT NULL;

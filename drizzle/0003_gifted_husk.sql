@@ -1,1 +1,0 @@
-ALTER TABLE "user_achievements" ADD COLUMN "completed" boolean DEFAULT false;

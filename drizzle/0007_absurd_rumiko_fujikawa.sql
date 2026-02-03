@@ -1,1 +1,0 @@
-ALTER TABLE "goal_lists" ADD COLUMN "created_from" text;
